@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Analyzer — Piattaforma Professionale</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070f; --bg2: #0f0f1a; --bg3: #161625; --bg4: #1e1e30;
+  --accent: #7c6af7; --accent2: #f06292; --accent3: #26d7a0;
+  --text: #eeeeff; --text2: #9d9bbf; --text3: #55536e;
+  --border: rgba(124,106,247,0.15); --r: 12px; --r2: 18px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'DM Sans', sans-serif; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+
+/* Login Overlay */
+#login-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.login-box {
+  background: var(--bg2); padding: 40px; border-radius: var(--r2);
+  border: 1px solid var(--border); text-align: center; width: 100%; max-width: 400px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.login-box h2 { font-family: 'Syne'; margin-bottom: 25px; font-size: 1.8rem; }
+.input-group { margin-bottom: 15px; text-align: left; }
+.input-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: var(--text2); text-transform: uppercase; }
+.input-group input, .input-group select, .input-group textarea {
+  width: 100%; padding: 12px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r); color: #fff; outline: none; transition: 0.3s;
+}
+.input-group input:focus { border-color: var(--accent); }
+
+/* Main UI */
+.main-content { display: none; padding: 40px; max-width: 1200px; margin: 0 auto; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+h1 { font-family: 'Syne'; font-size: 2.2rem; background: linear-gradient(90deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.dashboard-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+
+/* Section Cards */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 25px; height: fit-content; }
+.card h3 { font-family: 'Syne'; margin-bottom: 20px; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+
+.btn {
+  background: var(--accent); color: #fff; border: none; padding: 12px 24px;
+  border-radius: var(--r); cursor: pointer; font-weight: 700; transition: 0.3s;
+  text-transform: uppercase; font-size: 0.85rem;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(124,106,247,0.4); }
+
+.job-list { display: flex; flex-direction: column; gap: 15px; }
+.job-item { background: var(--bg3); padding: 15px; border-radius: var(--r); border-left: 4px solid var(--accent); }
+.job-item h4 { color: #fff; margin-bottom: 5px; }
+.job-item p { font-size: 0.9rem; color: var(--text2); }
+
+/* Form Professionale */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h2>Marketing Analyzer</h2>
+    <div class="input-group">
+      <label>Username</label>
+      <input type="text" id="user" placeholder="es: a_bertonasco">
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="pass" placeholder="••••••••">
+    </div>
+    <button class="btn" style="width:100%" onclick="login()">Accedi alla Dashboard</button>
+  </div>
+</div>
+
+<!-- DASHBOARD PRIVATA -->
+<div class="main-content" id="dashboard">
+  <header>
+    <h1>Marketing Analyzer <span style="font-size: 1rem; color: var(--text2); -webkit-text-fill-color: var(--text2);">| Area Privata</span></h1>
+    <button class="btn" style="background:transparent; border:1px solid var(--border);" onclick="location.reload()">Esci</button>
+  </header>
+
+  <div class="dashboard-grid">
+    <!-- COLONNA SINISTRA: INSERIMENTO -->
+    <div class="card">
+      <h3>⊕ Inserimento Manuale</h3>
+      <div class="input-group">
+        <label>Titolo Posizione</label>
+        <input type="text" id="job-title" placeholder="es. Junior Performance Marketing">
+      </div>
+      <div class="input-group">
+        <label>Azienda</label>
+        <input type="text" id="job-company" placeholder="es. Google, Amazon...">
+      </div>
+      <div class="form-row">
+        <div class="input-group">
+          <label>Località</label>
+          <input type="text" id="job-loc" placeholder="Milano, Remote...">
+        </div>
+        <div class="input-group">
+          <label>Salary (K/anno)</label>
+          <input type="text" id="job-sal" placeholder="30k-40k">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Link Offerta / Note</label>
+        <textarea id="job-notes" rows="3" placeholder="Incolla il link o requisiti principali..."></textarea>
+      </div>
+      <button class="btn" style="width:100%" onclick="addJob()">Aggiungi Proposta</button>
+    </div>
+
+    <!-- COLONNA DESTRA: ELENCO -->
+    <div class="card">
+      <h3>☰ Proposte Monitorate</h3>
+      <div id="job-container" class="job-list">
+        <p id="empty-msg" style="color:var(--text3); font-style:italic;">Nessuna proposta inserita manualmente.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Database Utenti (Standardizzato)
+const validUsers = {
+    'l_aldebrandi': 'Marketing2026!LA', 'm_antonicelli': 'Marketing2026!MA',
+    'l_bardelli': 'Marketing2026!LB', 'a_bertonasco': 'Marketing2026!AB',
+    'c_bellucci': 'Marketing2026!CB', 'm_fumarola': 'Marketing2026!MF',
+    'm_gualtieri': 'Marketing2026!MG', 'm_leonardi': 'Marketing2026!ML',
+    'f_mendez': 'Marketing2026!FM', 'p_motta': 'Marketing2026!PM',
+    'f_paganini': 'Marketing2026!FP', 'i_pigato': 'Marketing2026!IP',
+    'm_porcu': 'Marketing2026!MP', 'a_quevedo': 'Marketing2026!AQ',
+    'l_rossi': 'Marketing2026!LR', 'a_tozzi': 'Marketing2026!AT',
+    'l_turco': 'Marketing2026!LT', 'c_vannutelli': 'Marketing2026!CV',
+    's_zanotti': 'Marketing2026!SZ', 'admin': 'Dashboard2024!'
+};
+
+function login() {
+    const u = document.getElementById('user').value.toLowerCase();
+    const p = document.getElementById('pass').value;
+
+    if (validUsers[u] && validUsers[u] === p) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+    } else {
+        alert('Credenziali non valide.');
+    }
+}
+
+// Logica inserimento manuale
+function addJob() {
+    const title = document.getElementById('job-title').value;
+    const company = document.getElementById('job-company').value;
+    const loc = document.getElementById('job-loc').value;
+    const sal = document.getElementById('job-sal').value;
+    const notes = document.getElementById('job-notes').value;
+
+    if (!title || !company) {
+        alert('Inserisci almeno Titolo e Azienda!');
+        return;
+    }
+
+    const container = document.getElementById('job-container');
+    const emptyMsg = document.getElementById('empty-msg');
+    if (emptyMsg) emptyMsg.remove();
+
+    const jobItem = document.createElement('div');
+    jobItem.className = 'job-item';
+    jobItem.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <h4>${title} @ ${company}</h4>
+                <p>📍 ${loc} | 💰 ${sal}</p>
+                <p style="margin-top:10px; font-size:0.8rem; color:var(--accent);">${notes}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; color:var(--accent2); cursor:pointer; font-size:0.8rem;">Elimina</button>
+        </div>
+    `;
+
+    container.prepend(jobItem);
+
+    // Reset Form
+    document.getElementById('job-title').value = '';
+    document.getElementById('job-company').value = '';
+    document.getElementById('job-loc').value = '';
+    document.getElementById('job-sal').value = '';
+    document.getElementById('job-notes').value = '';
+}
+</script>
+</body>
+</html>
