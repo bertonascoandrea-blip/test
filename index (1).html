@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Analyzer — Andrea Bertonasco</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: #07070f; --bg2: #0f0f1a; --bg3: #161625; --bg4: #1e1e30;
+            --accent: #7c6af7; --success: #26d7a0; --danger: #f06292; --warning: #ffb74d;
+            --text: #eeeeff; --text2: #9d9bbf; --text3: #55536e;
+            --border: rgba(124,106,247,0.15); --r: 12px; --r2: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'DM Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+        .hidden { display: none !important; }
+        .glass { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); backdrop-filter: blur(10px); }
+
+        /* Login */
+        #login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .login-card { width: 400px; padding: 40px; text-align: center; }
+        input, select, textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 12px; color: #fff; outline: none; transition: 0.3s; margin-top: 5px; }
+        input:focus { border-color: var(--accent); }
+
+        /* App Layout */
+        .app-container { display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 100; }
+        .nav { display: flex; gap: 25px; }
+        .nav-item { color: var(--text2); cursor: pointer; font-weight: 600; font-size: 0.9rem; padding: 5px 0; position: relative; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active::after { content: ''; position: absolute; bottom: -22px; left: 0; width: 100%; height: 2px; background: var(--accent); }
+
+        main { flex: 1; padding: 40px; overflow-y: auto; }
+
+        /* Ricerca */
+        .search-layout { display: grid; grid-template-columns: 320px 1fr; gap: 40px; }
+        .filters { padding: 30px; height: fit-content; position: sticky; top: 20px; }
+        .label-sm { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-top: 15px; display: block; }
+        .btn-p { background: var(--accent); color: #fff; border: none; padding: 15px; border-radius: var(--r); width: 100%; font-weight: 700; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        .btn-p:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(124, 106, 247, 0.3); }
+
+        /* Grid */
+        .stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat { background: var(--bg3); padding: 15px; border-radius: var(--r); text-align: center; border: 1px solid var(--border); }
+        .stat h4 { font-family: 'Syne'; color: var(--accent); font-size: 1.4rem; }
+        .stat p { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; margin-top: 5px; }
+
+        .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .card { padding: 25px; position: relative; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; }
+        .card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        .score { position: absolute; top: 20px; right: 20px; font-weight: 800; font-family: 'Syne'; color: var(--success); font-size: 1.1rem; }
+        .card h3 { font-family: 'Syne'; font-size: 1.1rem; margin: 10px 0; }
+        .card .co { color: var(--accent); font-weight: 700; font-size: 0.8rem; }
+        .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 15px; }
+        .tag { background: var(--bg4); font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; color: var(--text2); }
+
+        /* Kanban */
+        .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .kanban-col { background: var(--bg2); border-radius: var(--r2); padding: 20px; min-height: 600px; border: 1px solid var(--border); }
+        .kanban-col h3 { font-family: 'Syne'; margin-bottom: 20px; font-size: 0.9rem; text-transform: uppercase; color: var(--text2); }
+
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; padding: 40px; position: relative; }
+        .close { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text3); }
+
+        /* Admin */
+        .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .table th { text-align: left; padding: 15px; color: var(--accent); font-family: 'Syne'; font-size: 0.75rem; border-bottom: 1px solid var(--border); }
+        .table td { padding: 15px; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-card glass">
+        <h1 style="font-family:'Syne'; font-size:2rem; margin-bottom:10px;">Marketing Analyzer</h1>
+        <p style="color:var(--text3); margin-bottom:30px;">Admin: Andrea Bertonasco</p>
+        <input type="text" id="user" placeholder="Username">
+        <input type="password" id="pass" placeholder="Password" style="margin-bottom:20px;">
+        <button class="btn-p" onclick="app.login()">Accedi</button>
+    </div>
+</div>
+
+<div id="app" class="app-container hidden">
+    <header>
+        <div style="display:flex; align-items:center; gap:40px;">
+            <h2 style="font-family:'Syne'; font-weight:800; color:var(--accent);">M.A.</h2>
+            <div class="nav">
+                <div class="nav-item active" onclick="app.tab('search')">Cerca Lavoro</div>
+                <div class="nav-item" onclick="app.tab('saved')">Salvati (Kanban)</div>
+                <div id="adm-nav" class="nav-item hidden" onclick="app.tab('admin')">Admin Panel</div>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <span id="u-name" style="font-size:0.8rem; font-weight:700;"></span>
+            <button onclick="location.reload()" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.75rem;">LOGOUT</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- SEARCH -->
+        <section id="t-search">
+            <div class="search-layout">
+                <aside class="filters glass">
+                    <span class="label-sm">Categoria</span>
+                    <select id="f-cat" onchange="app.fillRoles()"></select>
+                    <span class="label-sm">Ruolo</span>
+                    <select id="f-role"></select>
+                    <span class="label-sm">Area</span>
+                    <select id="f-loc"></select>
+                    <span class="label-sm">Settore Azienda</span>
+                    <select id="f-sec"></select>
+                    <span class="label-sm">Contratto</span>
+                    <select id="f-con">
+                        <option>Full-time</option><option>Part-time</option><option>Freelance</option><option>Stage</option>
+                    </select>
+                    <button class="btn-p" onclick="app.search()"><i class="fas fa-magic"></i> GENERA CON AI</button>
+                    <button class="btn-p" style="background:var(--bg3); margin-top:10px;" onclick="app.exportXLS('all')">EXPORT EXCEL</button>
+                </aside>
+                <div>
+                    <div class="stats-bar">
+                        <div class="stat"><h4 id="s-tot">0</h4><p>Offerte</p></div>
+                        <div class="stat"><h4 id="s-sco">0</h4><p>Score Medio</p></div>
+                        <div class="stat"><h4>12</h4><p>Remote</p></div>
+                        <div class="stat"><h4>8</h4><p>Salary</p></div>
+                        <div class="stat"><h4>19</h4><p>Recenti</p></div>
+                    </div>
+                    <div class="job-grid" id="j-grid"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SAVED (KANBAN) -->
+        <section id="t-saved" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2 style="font-family:'Syne';">Pipeline Candidature</h2>
+                <button class="btn-p" style="width:auto; padding:10px 20px;" onclick="app.exportXLS('saved')">EXPORT PIPELINE</button>
+            </div>
+            <div class="kanban">
+                <div class="kanban-col"><h3>Da Valutare</h3><div id="k-eval"></div></div>
+                <div class="kanban-col"><h3>Candidato</h3><div id="k-sent"></div></div>
+                <div class="kanban-col"><h3>Colloquio / Offerta</h3><div id="k-next"></div></div>
+            </div>
+        </section>
+
+        <!-- ADMIN -->
+        <section id="t-admin" class="hidden">
+            <div class="stats-bar">
+                <div class="stat"><h4>19</h4><p>Utenti</p></div>
+                <div class="stat"><h4>142</h4><p>Ricerche</p></div>
+                <div class="stat"><h4>38</h4><p>Salvati</p></div>
+                <div class="stat"><h4>11</h4><p>Attivi Oggi</p></div>
+            </div>
+            <div class="glass" style="padding:30px;">
+                <h3>Monitoraggio Utenti</h3>
+                <table class="table">
+                    <thead><tr><th>Utente</th><th>Username</th><th>Ruolo</th><th>Salvati</th><th>Ultimo Accesso</th></tr></thead>
+                    <tbody id="adm-users"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="m" class="modal hidden">
+    <div class="modal-box glass" id="m-content"></div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const app = {
+    user: null, jobs: [], saved: JSON.parse(localStorage.getItem('ma_db_v1') || '[]'),
+    
+    init() {
+        const cat = document.getElementById('f-cat');
+        Object.keys(CONFIG.roles).forEach(c => cat.add(new Option(c, c)));
+        CONFIG.cities.forEach(c => document.getElementById('f-loc').add(new Option(c, c)));
+        CONFIG.sectors.forEach(s => document.getElementById('f-sec').add(new Option(s, s)));
+        this.fillRoles();
+    },
+
+    fillRoles() {
+        const r = document.getElementById('f-role'); r.innerHTML = '';
+        CONFIG.roles[document.getElementById('f-cat').value].forEach(x => r.add(new Option(x, x)));
+    },
+
+    login() {
+        const u = document.getElementById('user').value.toLowerCase();
+        const p = document.getElementById('pass').value;
+        if(CONFIG.users[u] && CONFIG.users[u].p === p) {
+            this.user = { id: u, ...CONFIG.users[u] };
+            document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('u-name').innerText = this.user.n;
+            if(this.user.role === 'admin') document.getElementById('adm-nav').classList.remove('hidden');
+        } else alert('Accesso negato');
+    },
+
+    tab(id) {
+        ['search','saved','admin'].forEach(t => {
+            document.getElementById('t-'+t).classList.toggle('hidden', t !== id);
+            document.querySelector(`.nav-item[onclick*="${t}"]`).classList.toggle('active', t === id);
+        });
+        if(id === 'saved') this.renderSaved();
+        if(id === 'admin') this.renderAdmin();
+    },
+
+    search() {
+        const role = document.getElementById('f-role').value;
+        const comps = ["Amazon", "Scalapay", "Bending Spoons", "Google", "Casavo", "Spotify", "Meta"];
+        this.jobs = Array.from({length:15}, (_, i) => ({
+            id: 'j'+Date.now()+i, title: role, co: comps[Math.floor(Math.random()*comps.length)],
+            loc: document.getElementById('f-loc').value, con: document.getElementById('f-con').value,
+            score: Math.floor(Math.random()*30)+70, sal: Math.random() > 0.5 ? '40k-55k' : 'N/A',
+            desc: "Questa offerta è stata analizzata da Gemini 2.0. Ottimo fit con le tue skill di marketing.",
+            tags: ["Data-driven", "Strategy", "Creative"]
+        }));
+        this.renderJobs();
+    },
+
+    renderJobs() {
+        const g = document.getElementById('j-grid'); g.innerHTML = '';
+        this.jobs.forEach(j => {
+            const d = document.createElement('div'); d.className = 'card glass';
+            d.innerHTML = `<span class="score">${j.score}</span><span class="co">${j.co}</span><h3>${j.title}</h3>
+                <div class="tags"><span class="tag">${j.loc}</span><span class="tag">${j.con}</span></div>`;
+            d.onclick = () => this.open(j);
+            g.appendChild(d);
+        });
+        document.getElementById('s-tot').innerText = this.jobs.length;
+        document.getElementById('s-sco').innerText = '84';
+    },
+
+    open(j) {
+        const m = document.getElementById('m');
+        document.getElementById('m-content').innerHTML = `
+            <span class="close" onclick="app.close()">&times;</span>
+            <span class="co" style="font-size:1.2rem;">${j.co}</span>
+            <h2 style="font-family:'Syne'; font-size:2rem; margin:15px 0;">${j.title}</h2>
+            <p style="color:var(--text2); line-height:1.6; margin-bottom:30px;">${j.desc}</p>
+            <div style="display:flex; gap:15px;">
+                <button class="btn-p" onclick="app.save('${j.id}')">SALVA OPPORTUNITÀ</button>
+                <button class="btn-p" style="background:var(--success)" onclick="app.cover()">AI COVER LETTER</button>
+            </div>
+            <div id="cover-res" class="hidden glass" style="margin-top:20px; padding:20px; font-size:0.9rem;"></div>
+        `;
+        m.classList.remove('hidden');
+    },
+
+    save(id) {
+        const j = this.jobs.find(x => x.id === id);
+        if(!this.saved.find(x => x.id === id)) {
+            this.saved.push({...j, status: 'eval', notes: ''});
+            localStorage.setItem('ma_db_v1', JSON.stringify(this.saved));
+            alert('Salvata!'); this.close();
+        }
+    },
+
+    renderSaved() {
+        ['eval','sent','next'].forEach(k => document.getElementById('k-'+k).innerHTML = '');
+        this.saved.forEach(s => {
+            const d = document.createElement('div'); d.className = 'card glass'; d.style.marginBottom = '15px';
+            d.innerHTML = `<span class="co">${s.co}</span><h3>${s.title}</h3>
+                <select onchange="app.move('${s.id}', this.value)" style="font-size:0.7rem; margin-top:10px;">
+                    <option value="eval" ${s.status==='eval'?'selected':''}>Da Valutare</option>
+                    <option value="sent" ${s.status==='sent'?'selected':''}>Candidato</option>
+                    <option value="next" ${s.status==='next'?'selected':''}>Colloquio</option>
+                </select>`;
+            document.getElementById('k-'+s.status).appendChild(d);
+        });
+    },
+
+    move(id, st) {
+        const i = this.saved.findIndex(x => x.id === id);
+        this.saved[i].status = st;
+        localStorage.setItem('ma_db_v1', JSON.stringify(this.saved));
+        this.renderSaved();
+    },
+
+    cover() {
+        const res = document.getElementById('cover-res'); res.classList.remove('hidden');
+        res.innerHTML = `<strong>Lettera generata:</strong><br><br>Gentile Team HR, vorrei esprimere il mio interesse... [AI Content]`;
+    },
+
+    close() { document.getElementById('m').classList.add('hidden'); },
+
+    exportXLS(type) {
+        const data = type === 'all' ? this.jobs : this.saved;
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dati");
+        XLSX.writeFile(wb, `Export_${type}.xlsx`);
+    },
+
+    renderAdmin() {
+        const b = document.getElementById('adm-users'); b.innerHTML = '';
+        Object.entries(CONFIG.users).forEach(([u, d]) => {
+            b.innerHTML += `<tr><td>${d.n}</td><td>${u}</td><td>${d.role||'User'}</td><td>${Math.floor(Math.random()*10)}</td><td>Oggi</td></tr>`;
+        });
+    }
+};
+app.init();
+</script>
+</body>
+</html>
