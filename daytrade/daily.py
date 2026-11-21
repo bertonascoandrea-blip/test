@@ -267,23 +267,33 @@ def main():
         q = d["qty"]
         out("## %d. %s (%s) — ISIN `%s`" % (n, names.get(d["sym"].replace(".", "-"), d["sym"]), d["sym"], code))
         out("")
-        out("| | EUR circa | USD |")
+        ps, pt, pl = (s / e - 1) * 100, (t / e - 1) * 100, (lim / e - 1) * 100
+        out("Prezzo USA alle %s italiane: %.2f $ (circa %.2f €). Quantità: **%d azioni**." % (rome(d["tclose"]), e, e / fx, q))
+        out("")
+        out("Livelli **rispetto al prezzo che vedi in app** (P):")
+        out("")
+        out("| | regola | se in app P = %.2f € |" % (e / fx))
         out("|---|---|---|")
-        out("| Prezzo attuale (%s Italia) | %.2f | %.2f |" % (rome(d["tclose"]), e / fx, e))
-        out("| **Acquisto: limite massimo** | **%.2f** | %.2f |" % (lim / fx, lim))
-        out("| **Stop-loss** | **%.2f** | %.2f |" % (s / fx, s))
-        out("| **Take-profit** | **%.2f** | %.2f |" % (t / fx, t))
-        out("| Quantità | **%d azioni** | |" % q)
+        out("| **Acquisto: limite** | P %+.2f%% | **%.2f €** |" % (pl, lim / fx))
+        out("| **Stop-loss** | P %+.2f%% | **%.2f €** |" % (ps, s / fx))
+        out("| **Take-profit** | P %+.2f%% | **%.2f €** |" % (pt, t / fx))
+        out("")
+        out("Se in app il prezzo è diverso, ricalcola con la regola (es. stop = P × %.4f, take-profit = P × %.4f)." % (
+            s / e, t / e))
         out("")
         out("**Su Trade Republic:**")
         out("")
-        out("1. Tocca la **lente** in alto, incolla `%s` e apri **%s**." % (code, names.get(d["sym"].replace(".", "-"), d["sym"])))
-        out("2. Guarda il prezzo in app: se è **sopra %.2f €**, non comprare (il treno è passato)." % (lim / fx))
-        out("3. **Compra** → tipo di ordine **Limite** → prezzo limite **%.2f €** → quantità **%d** → conferma." % (lim / fx, q))
-        out("4. Appena l'ordine è eseguito: **Vendi** → tipo **Stop-Loss** → prezzo stop **%.2f €** → quantità **%d** → conferma." % (s / fx, q))
-        out("5. Take-profit: imposta un **avviso di prezzo** (campanella) a **%.2f €**; quando suona, cancella lo stop e "
-            "vendi. Se l'app ti lascia mettere anche un ordine **Limite** di vendita a %.2f € insieme allo stop, usalo." % (t / fx, t / fx))
-        out("6. Alle **%s** italiane, se è ancora aperta, cancella lo stop e vendi al prezzo di mercato." % rome(flat))
+        nm = names.get(d["sym"].replace(".", "-"), d["sym"])
+        out("1. Tocca la **lente**, incolla `%s` e apri **%s**. Leggi il prezzo P in alto." % (code, nm))
+        out("2. Tocca **Compra** → in basso a sinistra scegli **Limite** → scrivi il prezzo limite (P %+.2f%%, "
+            "es. **%.2f €**) → **Prosegui**." % (pl, lim / fx))
+        out("3. Scrivi **%d** azioni → **Prosegui** → scadenza **oggi** → conferma." % q)
+        out("4. Appena l'acquisto è eseguito, apri il titolo → **Vendi** → in basso scegli **Stop** → prezzo stop "
+            "(P %+.2f%%, es. **%.2f €**) → **Prosegui** → **%d** azioni → scadenza **oggi** → conferma." % (ps, s / fx, q))
+        out("5. Take-profit: imposta un **avviso di prezzo** a P %+.2f%% (es. **%.2f €**). Quando suona: cancella lo "
+            "stop e vendi. Se l'app ti lascia mettere anche un ordine **Limite** di vendita insieme allo stop, usalo al "
+            "posto dell'avviso." % (pt, t / fx))
+        out("6. Alle **%s** italiane, se è ancora aperta, cancella lo stop e vendi a mercato." % rome(flat))
         out("")
         out("Perdita allo stop: **%.2f €** (commissioni incluse). Guadagno al target: **%.2f €** (commissioni incluse)." % (
             d["risk_eur"] + fees, q * (t - e) / fx - fees))
