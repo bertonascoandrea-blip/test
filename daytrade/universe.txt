@@ -1,0 +1,125 @@
+AAPL|Apple
+MSFT|Microsoft
+NVDA|NVIDIA
+AMZN|Amazon
+META|Meta Platforms
+GOOGL|Alphabet
+TSLA|Tesla
+AVGO|Broadcom
+AMD|Advanced Micro Devices
+NFLX|Netflix
+PLTR|Palantir
+COIN|Coinbase
+MSTR|Strategy
+INTC|Intel
+MU|Micron
+QCOM|Qualcomm
+ARM|Arm Holdings
+SMCI|Super Micro Computer
+TSM|Taiwan Semiconductor
+ASML|ASML
+ORCL|Oracle
+CRM|Salesforce
+ADBE|Adobe
+NOW|ServiceNow
+SNOW|Snowflake
+CRWD|CrowdStrike
+PANW|Palo Alto Networks
+NET|Cloudflare
+DDOG|Datadog
+SHOP|Shopify
+UBER|Uber
+ABNB|Airbnb
+DASH|DoorDash
+HOOD|Robinhood
+SOFI|SoFi
+PYPL|PayPal
+SQ|Block
+XYZ|Block
+V|Visa
+MA|Mastercard
+JPM|JPMorgan
+BAC|Bank of America
+GS|Goldman Sachs
+MS|Morgan Stanley
+WFC|Wells Fargo
+C|Citigroup
+SCHW|Charles Schwab
+BRK-B|Berkshire Hathaway
+XOM|Exxon Mobil
+CVX|Chevron
+OXY|Occidental
+COP|ConocoPhillips
+WMT|Walmart
+COST|Costco
+TGT|Target
+HD|Home Depot
+LOW|Lowe's
+NKE|Nike
+SBUX|Starbucks
+MCD|McDonald's
+KO|Coca-Cola
+PEP|PepsiCo
+PG|Procter & Gamble
+DIS|Disney
+CMCSA|Comcast
+T|AT&T
+VZ|Verizon
+BA|Boeing
+LMT|Lockheed Martin
+RTX|RTX
+GE|GE Aerospace
+CAT|Caterpillar
+DE|Deere
+UNH|UnitedHealth
+LLY|Eli Lilly
+NVO|Novo Nordisk
+JNJ|Johnson & Johnson
+PFE|Pfizer
+MRK|Merck
+ABBV|AbbVie
+MRNA|Moderna
+F|Ford
+GM|General Motors
+RIVN|Rivian
+LCID|Lucid
+NIO|NIO
+BABA|Alibaba
+PDD|PDD Holdings
+JD|JD.com
+SNAP|Snap
+PINS|Pinterest
+RBLX|Roblox
+U|Unity
+AFRM|Affirm
+UPST|Upstart
+MARA|MARA Holdings
+RIOT|Riot Platforms
+CLSK|CleanSpark
+IONQ|IonQ
+RGTI|Rigetti
+SOUN|SoundHound
+AI|C3.ai
+APP|AppLovin
+VST|Vistra
+CEG|Constellation Energy
+BE|Bloom Energy
+OKLO|Oklo
+SMR|NuScale
+ENPH|Enphase
+FSLR|First Solar
+DELL|Dell
+HPE|HP Enterprise
+ANET|Arista
+MRVL|Marvell
+LRCX|Lam Research
+AMAT|Applied Materials
+KLAC|KLA
+TXN|Texas Instruments
+ON|ON Semiconductor
+WDC|Western Digital
+STX|Seagate
+CVNA|Carvana
+RDDT|Reddit
+SPOT|Spotify
+TEM|Tempus AI
