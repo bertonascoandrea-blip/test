@@ -100,6 +100,7 @@ def main():
     ap.add_argument("--eurusd", type=float)
     ap.add_argument("--universe", default=os.path.join(ROOT, "daytrade", "universe.txt"))
     ap.add_argument("--min-history", type=int, default=10, help="past triggers needed to trust the history")
+    ap.add_argument("--offline", help="folder of saved 60d/5m Yahoo charts named <TICKER>.json (replay, no network)")
     ap.add_argument("--out", default=os.path.join(ROOT, "trader", "daily"))
     a = ap.parse_args()
 
@@ -134,8 +135,10 @@ def main():
     out("")
 
     wl = os.path.join(run, "watchlist.json")
-    rc, so, se = py("trader-scanner/scan.py", "orb", "--universe", a.universe, "--now", nows,
-                    "--out", wl, "--config", cfgp, "--quiet")
+    scan_args = ["orb", "--universe", a.universe, "--now", nows, "--out", wl, "--config", cfgp, "--quiet"]
+    if a.offline:
+        scan_args += ["--offline", a.offline]
+    rc, so, se = py("trader-scanner/scan.py", *scan_args)
     if rc != 0 or not os.path.exists(wl):
         msg = (se or so).strip().splitlines()[-1:] or ["scanner failed"]
         out("**Nessuna idea.** Lo scanner non ha prodotto risultati: %s" % msg[0])
@@ -154,8 +157,11 @@ def main():
                            "storia insufficiente": 0, "negativa dopo commissioni": 0, "rischio BLOCK": 0, "dati": 0}
     for h in hits:
         sym = h["symbol"]
-        cp = os.path.join(cache, "%s-60d5m.json" % sym)
+        cp = os.path.join(cache, "%s-60d5m.json" % sym.replace(".", "-"))
         try:
+            src = a.offline and os.path.join(a.offline, "%s.json" % sym.replace(".", "-"))
+            if not os.path.exists(cp) and src and os.path.exists(src):
+                open(cp, "w").write(open(src).read())
             if not os.path.exists(cp):
                 txt = get_json("https://query2.finance.yahoo.com/v8/finance/chart/%s?range=60d&interval=5m" % sym)
                 open(cp, "w").write(txt)
@@ -249,41 +255,46 @@ def main():
         return finish(lines, run)
 
     flat = now.replace(hour=15, minute=55)
+    isin = json.load(open(os.path.join(ROOT, "daytrade", "isin.json")))
+    names = dict(l.strip().split("|", 1) for l in open(a.universe) if "|" in l)
+    out("Prendine **una alla volta**, partendo dalla n. 1: con %.0f € il capitale basta per una posizione." % a.capital_eur)
+    out("")
     for n, d in enumerate(ideas, 1):
         p, mc, hist = d["plan"], d["tm"]["mc"], d["tm"]["history"]
         e, s, t = p["entry"], p["stop"], p["target"]
         lim = round(e * 1.002, 2)
-        out("## %d. %s — %s azioni" % (n, d["sym"], d["qty"]))
+        code = isin.get(d["sym"].replace(".", "-"), "?")
+        q = d["qty"]
+        out("## %d. %s (%s) — ISIN `%s`" % (n, names.get(d["sym"].replace(".", "-"), d["sym"]), d["sym"], code))
         out("")
-        out("| | USD | EUR circa |")
+        out("| | EUR circa | USD |")
         out("|---|---|---|")
-        out("| Entrata (ultimo prezzo, %s Italia) | %.2f | %.2f |" % (rome(d["tclose"]), e, e / fx))
-        out("| Limite d'acquisto massimo | %.2f | %.2f |" % (lim, lim / fx))
-        out("| **Stop-loss** | %.2f | **%.2f** |" % (s, s / fx))
-        out("| **Take-profit** (%s) | %.2f | **%.2f** |" % (p.get("target_label", "").split(" ")[0], t, t / fx))
+        out("| Prezzo attuale (%s Italia) | %.2f | %.2f |" % (rome(d["tclose"]), e / fx, e))
+        out("| **Acquisto: limite massimo** | **%.2f** | %.2f |" % (lim / fx, lim))
+        out("| **Stop-loss** | **%.2f** | %.2f |" % (s / fx, s))
+        out("| **Take-profit** | **%.2f** | %.2f |" % (t / fx, t))
+        out("| Quantità | **%d azioni** | |" % q)
         out("")
-        out("- Investimento: %.0f €. Perdita allo stop: %.2f € + %.0f € commissioni = **%.2f €**. Guadagno al target: %.2f € − %.0f € = **%.2f €**." % (
-            d["qty"] * e / fx, d["risk_eur"], fees, d["risk_eur"] + fees,
-            d["qty"] * (t - e) / fx, fees, d["qty"] * (t - e) / fx - fees))
-        out("- Time Machine: target per primo %.1f%%, stop per primo %.1f%%, aperto a fine giornata %.1f%%." % (
-            100 * mc["p_target"], 100 * mc["p_stop"], 100 * mc["p_neither"]))
-        out("- Storia reale (stessa regola, ultime %d sedute): scattata %d volte, %d target, %d stop, %d né l'uno né l'altro." % (
-            hist["sessions"], hist["triggered"], hist["target"], hist["stop"], hist["close"]))
-        out("- Risultato atteso dopo commissioni: %+.2f € (simulazioni), %+.2f € (storia). Rottura iniziale alle %s New York." % (
-            d["ev_mc"], d["ev_hist"], d["trig"]))
-        out("- Chiudi comunque entro le **%s** italiane." % rome(flat))
+        out("**Su Trade Republic:**")
         out("")
-    out("## Come farlo su Trade Republic")
-    out("")
-    out("1. Prendine **una alla volta**: con %.0f € il capitale basta per una posizione." % a.capital_eur)
-    out("2. Compra con un **ordine limite** al prezzo massimo indicato (non inseguire se è già sopra).")
-    out("3. Appena eseguito, imposta lo **stop-loss** in EUR al livello in tabella.")
-    out("4. Metti un **avviso di prezzo** al take-profit e vendi quando suona (se Trade Republic non ti permette "
-        "di avere stop-loss e ordine limite insieme sulle stesse azioni).")
-    out("5. Alle %s italiane vendi quello che è ancora aperto." % rome(flat))
-    out("")
-    out("I prezzi in EUR sono convertiti al cambio attuale: controlla la quotazione in app (Lang & Schwarz) prima di "
-        "inviare. Simulazione, non previsione. Non è consulenza finanziaria.")
+        out("1. Tocca la **lente** in alto, incolla `%s` e apri **%s**." % (code, names.get(d["sym"].replace(".", "-"), d["sym"])))
+        out("2. Guarda il prezzo in app: se è **sopra %.2f €**, non comprare (il treno è passato)." % (lim / fx))
+        out("3. **Compra** → tipo di ordine **Limite** → prezzo limite **%.2f €** → quantità **%d** → conferma." % (lim / fx, q))
+        out("4. Appena l'ordine è eseguito: **Vendi** → tipo **Stop-Loss** → prezzo stop **%.2f €** → quantità **%d** → conferma." % (s / fx, q))
+        out("5. Take-profit: imposta un **avviso di prezzo** (campanella) a **%.2f €**; quando suona, cancella lo stop e "
+            "vendi. Se l'app ti lascia mettere anche un ordine **Limite** di vendita a %.2f € insieme allo stop, usalo." % (t / fx, t / fx))
+        out("6. Alle **%s** italiane, se è ancora aperta, cancella lo stop e vendi al prezzo di mercato." % rome(flat))
+        out("")
+        out("Perdita allo stop: **%.2f €** (commissioni incluse). Guadagno al target: **%.2f €** (commissioni incluse)." % (
+            d["risk_eur"] + fees, q * (t - e) / fx - fees))
+        out("Perché: Time Machine target per primo %.1f%% contro stop %.1f%%; nella storia reale (%d sedute) la regola "
+            "è scattata %d volte: %d target, %d stop, %d chiuse a fine giornata. Risultato atteso dopo commissioni "
+            "%+.2f € (simulazioni) / %+.2f € (storia)." % (
+                100 * mc["p_target"], 100 * mc["p_stop"], hist["sessions"], hist["triggered"], hist["target"],
+                hist["stop"], hist["close"], d["ev_mc"], d["ev_hist"]))
+        out("")
+    out("I prezzi in EUR sono convertiti al cambio di ora (%.4f): in app vale la quotazione Lang & Schwarz, che può "
+        "differire di qualche centesimo. Simulazione, non previsione. Non è consulenza finanziaria." % fx)
     return finish(lines, run)
 
 

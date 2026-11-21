@@ -3,7 +3,6 @@ MSFT|Microsoft
 NVDA|NVIDIA
 AMZN|Amazon
 META|Meta Platforms
-GOOGL|Alphabet
 TSLA|Tesla
 AVGO|Broadcom
 AMD|Advanced Micro Devices
@@ -15,8 +14,6 @@ INTC|Intel
 MU|Micron
 QCOM|Qualcomm
 ARM|Arm Holdings
-SMCI|Super Micro Computer
-TSM|Taiwan Semiconductor
 ASML|ASML
 ORCL|Oracle
 CRM|Salesforce
@@ -34,7 +31,6 @@ DASH|DoorDash
 HOOD|Robinhood
 SOFI|SoFi
 PYPL|PayPal
-SQ|Block
 XYZ|Block
 V|Visa
 MA|Mastercard
@@ -85,14 +81,12 @@ RIVN|Rivian
 LCID|Lucid
 NIO|NIO
 BABA|Alibaba
-PDD|PDD Holdings
 JD|JD.com
 SNAP|Snap
 PINS|Pinterest
 RBLX|Roblox
 U|Unity
 AFRM|Affirm
-UPST|Upstart
 MARA|MARA Holdings
 RIOT|Riot Platforms
 CLSK|CleanSpark
