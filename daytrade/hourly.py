@@ -127,6 +127,11 @@ def main():
                             "questo protegge il capitale." % day.strftime("%d/%m")], a.dry_run)
         print("No idea all day.\n" + msg)
         return rc
+    if current == cps[0]:
+        rc, msg = whatsapp(["--text", "🟢 Day Trader attivo, %s: analizzo il mercato ogni ora fino alle 21:20. "
+                            "Per ora nessuna idea supera i filtri; ti scrivo appena ne trovo una." % day.strftime("%d/%m")],
+                           a.dry_run)
+        print("Sent the daily 'active' message.\n" + msg)
     print("No idea at %s New York; next check in an hour." % current.strftime("%H:%M"))
     print(open(report).read() if os.path.exists(report) else log[-2000:])
     return 0
